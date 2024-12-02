@@ -23,7 +23,7 @@ app.use((req, res, next) => {
     next();
 });
 
-app.use('/', router);
+app.use('/api', router);
 
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);

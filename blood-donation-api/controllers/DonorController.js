@@ -6,7 +6,7 @@ const registerDonor = async (req, res) => {
         const { name, bloodType, email, phone, lastDonationDate, address, city, otp } = req.body;
         if (!name || !bloodType || !email || !phone) {
             return res.status(400).json({ message: 'Enter the required fields' })
-        } else {
+        } else if (otp) {
             const record = await OTP.findOne({ where: { phoneNumber: phone, otp } });
             if (!record) {
                 return res.status(403).json({ message: 'Mobile not verified' });

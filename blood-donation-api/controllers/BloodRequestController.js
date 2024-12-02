@@ -3,10 +3,9 @@ const { getCanReceiveFrom } = require('../lib/getCanReceiveFrom');
 const { BloodRequest, Donor, OTP } = require('../models');
 const jwt = require('jsonwebtoken');
 
-const accountSid = "AC96d075fdbab037ee31716867adb82bc1";
-const authToken = "1dd0226992da20fe0f21ad637144ed66";
-const verifySid = "VA3dfc45b69b4c32999cf6d5774134ea9c";
-const client = require("twilio")(accountSid, authToken);
+const accountSid = 'AC96d075fdbab037ee31716867adb82bc1';
+const authToken = '0aa4a8dada0b9eaab0be1099c7446195';
+const client = require('twilio')(accountSid, authToken);
 
 const createBloodRequest = async (req, res) => {
     try {
@@ -22,8 +21,8 @@ const createBloodRequest = async (req, res) => {
                     }
                     contactPersonName = decoded.username
                 });
-        } else {
-            const record = await OTP.findOne({ where: { phoneNumber, otp } });
+        } else if (otp) {
+            const record = await OTP.findOne({ where: { phoneNumber: contactPhoneNumber, otp } });
             if (!record) {
                 return res.status(403).json({ message: 'Mobile not verified' });
             }
@@ -71,15 +70,17 @@ const getRequest = async (req, res) => {
 const sendOTP = async (req, res) => {
     const { phoneNumber } = req.body;
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    let msgOptions = {
-        from: '+18168738499',
-        to: `+91${phoneNumber}`,
-        body: `Otp for the blood Request Verification is: ${otp}`
-    }
     console.log("OTP Sent:", otp);
     try {
         await OTP.create({ phoneNumber, otp });
-        await client.messages.create(msgOptions);
+        client.messages
+            .create({
+                from: 'whatsapp:+14155238886',
+                contentSid: 'HX229f5a04fd0510ce1b071852155d3e75',
+                contentVariables: `{"1":"${otp}"}`,
+                to: `whatsapp:+91${phoneNumber}`
+            })
+            .then(message => console.log(message.sid))
         return res.json({ status: "Message Sent" });
     } catch (error) {
         console.log(error)
